@@ -103,3 +103,52 @@ main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
 .cell.filled { background: color-mix(in srgb, var(--line) 45%, transparent); }
 .cell b { font-size: 19px; font-weight: 500; }
 .cell small { font-size: 10px; color: var(--muted); }
+
+/* ---------- 영어 ---------- */
+button {
+  font: inherit; font-size: 13px; padding: 5px 14px; border-radius: 8px; cursor: pointer;
+  border: 1px solid var(--line); background: transparent; color: var(--fg);
+}
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.ok { border-color: var(--ok); color: var(--ok); }
+button:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; }
+
+/* 단어 퀴즈 */
+.en { text-align: center; }
+.word { font-size: 38px; font-weight: 600; line-height: 1.2; word-break: break-word; }
+.word.mid { font-size: 28px; }
+.word.small { font-size: 21px; }
+.en .answer {
+  height: auto; min-height: 24px; margin-top: 6px; font-size: 15px; line-height: 1.4; letter-spacing: 0;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: keep-all;
+}
+.en .typebox { width: 180px; font-size: 16px; letter-spacing: 0; }
+.mine { margin-top: 8px; height: 36px; line-height: 36px; font-size: 14px; color: var(--ng); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.actions { margin-top: 8px; height: 30px; display: flex; gap: 8px; }
+
+/* 단어 관리 */
+.manage { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 0 14px 14px; gap: 8px; }
+.manage input, .manage textarea {
+  width: 100%; font: inherit; font-size: 13px; padding: 7px 10px; border-radius: 8px;
+  border: 1px solid var(--line); background: transparent; color: var(--fg); outline: none; user-select: text;
+}
+.manage input:focus, .manage textarea:focus { border-color: var(--accent); }
+.manage ::placeholder { color: var(--muted); }
+.form { display: flex; flex-direction: column; gap: 6px; }
+.row-buttons { display: flex; gap: 6px; justify-content: flex-end; }
+.bulk { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+.bulk textarea { height: 110px; resize: none; }
+button.link { border: none; padding: 0; color: var(--muted); font-size: 12px; align-self: flex-start; }
+.msg { font-size: 12px; color: var(--accent); min-height: 16px; }
+.msg:empty { display: none; }
+.count { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+.list { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; }
+.item { display: flex; align-items: center; gap: 8px; padding: 6px 4px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.item:hover, .item.on { background: color-mix(in srgb, var(--line) 45%, transparent); }
+.item b { font-weight: 600; flex: none; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item span { flex: 1; min-width: 0; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+button.del { border: none; padding: 0 6px; color: var(--muted); font-size: 16px; line-height: 1; visibility: hidden; }
+.item:hover button.del { visibility: visible; }
+button.del:hover { color: var(--ng); }
+.list::-webkit-scrollbar { width: 6px; }
+.list::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }

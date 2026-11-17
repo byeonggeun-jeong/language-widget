@@ -6,10 +6,14 @@ const SIZES = {
   cycle: { width: 220, height: 260 },
   flash: { width: 220, height: 260 },
   table: { width: 420, height: 540 },
+  quiz: { width: 260, height: 260 },
+  manage: { width: 360, height: 520 },
 };
 
 const DEFAULTS = {
-  mode: 'cycle', // cycle | flash | table
+  lang: 'ja', // ja | en
+  mode: 'cycle', // 일본어: cycle | flash | table
+  enMode: 'quiz', // 영어: quiz | manage
   script: 'hiragana', // hiragana | katakana | random
   groups: { seion: true, daku: false, yoon: false },
   order: 'random', // random | sequential
@@ -24,8 +28,20 @@ const DEFAULTS = {
 
 const isMac = process.platform === 'darwin';
 const settingsFile = path.join(app.getPath('userData'), 'settings.json');
+const wordsFile = path.join(app.getPath('userData'), 'words.json');
 let settings;
 let win;
+
+// 지금 보여주는 화면 (창 크기 기준)
+const view = (s) => (s.lang === 'en' ? s.enMode : s.mode);
+
+function loadWords() {
+  try {
+    return JSON.parse(fs.readFileSync(wordsFile, 'utf8'));
+  } catch {
+    return [];
+  }
+}
 
 function loadSettings() {
   try {
@@ -46,10 +62,10 @@ const loginItem = { path: process.execPath, args: app.isPackaged ? [] : [path.re
 const canAutoStart = !isMac || app.isPackaged;
 
 function update(patch) {
-  const modeChanged = patch.mode && patch.mode !== settings.mode;
+  const prevView = view(settings);
   settings = { ...settings, ...patch };
   saveSettings();
-  if (modeChanged) win.setBounds({ ...win.getBounds(), ...SIZES[settings.mode] });
+  if (view(settings) !== prevView) win.setBounds({ ...win.getBounds(), ...SIZES[view(settings)] });
   win.setOpacity(settings.opacity);
   win.webContents.send('settings', settings);
 }
@@ -107,7 +123,7 @@ function buildMenu() {
     label, type: 'checkbox', checked: settings.groups[key],
     click: () => update({ groups: { ...settings.groups, [key]: !settings.groups[key] } }),
   });
-  return Menu.buildFromTemplate([
+  const japanese = [
     radio('순환 학습', 'mode', 'cycle'),
     radio('플래시카드', 'mode', 'flash'),
     radio('전체 표', 'mode', 'table'),
@@ -119,9 +135,20 @@ function buildMenu() {
     ] },
     { label: '출제 범위', submenu: [group('청음', 'seion'), group('탁음·반탁음', 'daku'), group('요음', 'yoon')] },
     { label: '순서', submenu: [radio('랜덤', 'order', 'random'), radio('순서대로', 'order', 'sequential')] },
+    { label: '글꼴', submenu: [radio('고딕체', 'font', 'gothic'), radio('교과서체', 'font', 'textbook')] },
+  ];
+  const english = [
+    radio('단어 퀴즈', 'enMode', 'quiz'),
+    radio('단어 관리', 'enMode', 'manage'),
+  ];
+  return Menu.buildFromTemplate([
+    radio('일본어', 'lang', 'ja'),
+    radio('영어', 'lang', 'en'),
+    { type: 'separator' },
+    ...(settings.lang === 'en' ? english : japanese),
+    { type: 'separator' },
     { label: '투명도', submenu: [1, 0.9, 0.8, 0.7, 0.5].map((v) => radio(`${v * 100}%`, 'opacity', v)) },
     { label: '테마', submenu: [radio('다크', 'theme', 'dark'), radio('라이트', 'theme', 'light')] },
-    { label: '글꼴', submenu: [radio('고딕체', 'font', 'gothic'), radio('교과서체', 'font', 'textbook')] },
     { label: '배경 이미지', submenu: [
       { label: '이미지 선택…', click: chooseImage },
       { label: '이미지 제거', enabled: !!settings.image, click: () => { removeImageFile(); update({ image: null }); } },
@@ -144,7 +171,7 @@ function buildMenu() {
 }
 
 function createWindow() {
-  const size = SIZES[settings.mode];
+  const size = SIZES[view(settings)];
   win = new BrowserWindow({
     ...size,
     ...initialPosition(size),
@@ -184,6 +211,8 @@ if (!app.requestSingleInstanceLock()) {
     settings = loadSettings();
     ipcMain.handle('get-settings', () => settings);
     ipcMain.handle('get-image', readImage);
+    ipcMain.handle('get-words', loadWords);
+    ipcMain.on('save-words', (_e, words) => fs.writeFileSync(wordsFile, JSON.stringify(words, null, 2)));
     ipcMain.on('show-menu', () => buildMenu().popup({ window: win }));
     createWindow();
   });
