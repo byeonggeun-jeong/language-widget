@@ -43,6 +43,21 @@ function loadWords() {
   }
 }
 
+// v1.3.1까지는 데이터 폴더 이름이 kana-widget이었다. 처음 실행할 때 설정·단어·배경 이미지를 옮기고 예전 폴더는 지운다
+function migrateOldData() {
+  const oldDir = path.join(app.getPath('appData'), 'kana-widget');
+  if (fs.existsSync(settingsFile) || !fs.existsSync(oldDir)) return;
+  fs.mkdirSync(app.getPath('userData'), { recursive: true });
+  for (const name of fs.readdirSync(oldDir)) {
+    if (name === 'settings.json' || name === 'words.json' || /^background-\d+\.png$/.test(name)) {
+      fs.copyFileSync(path.join(oldDir, name), path.join(app.getPath('userData'), name));
+    }
+  }
+  try {
+    fs.rmSync(oldDir, { recursive: true, force: true });
+  } catch {} // 예전 버전이 실행 중이라 잠겨 있으면 남겨 둔다
+}
+
 function loadSettings() {
   try {
     const saved = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
@@ -208,6 +223,7 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(() => {
     // macOS: skipTaskbar는 Windows 전용이라 Dock 아이콘·메뉴바를 따로 숨긴다
     if (isMac) app.setActivationPolicy('accessory');
+    migrateOldData();
     settings = loadSettings();
     ipcMain.handle('get-settings', () => settings);
     ipcMain.handle('get-image', readImage);
