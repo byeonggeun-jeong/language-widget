@@ -74,13 +74,12 @@
     return pool[pool.length - 1];
   }
 
-  // 결과 반영: 맞히면 틀린 기록 1 감소, 틀리면 1 증가. 맞음 인정이면 내 답을 뜻에 추가
-  function record(list, word, { correct, addMeaning }) {
+  // 결과 반영: 맞히면 틀린 기록 1 감소, 틀리면 1 증가
+  function record(list, word, { correct }) {
     return list.map((w) => {
       if (w.word !== word) return w;
       const miss = correct ? Math.max(0, (w.miss || 0) - 1) : Math.min((w.miss || 0) + 1, MAX_MISS);
-      const meanings = addMeaning && !w.meanings.includes(addMeaning) ? [...w.meanings, addMeaning] : w.meanings;
-      return { ...w, miss, meanings };
+      return { ...w, miss };
     });
   }
 

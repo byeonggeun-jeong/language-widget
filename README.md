@@ -14,7 +14,7 @@ Windows·macOS 바탕화면에 띄워두고 히라가나·가타가나를 익히
 
 ### macOS
 
-> v1.3.0(영어 추가)은 아직 macOS 빌드가 없습니다. 지금은 일본어만 있는 [v1.2.0](../../releases/tag/v1.2.0)의 `JapaneseWidget-mac-universal.zip`을 받아 아래 방법대로 설치하세요. (앱 이름도 `JapaneseWidget.app`)
+> v1.3 이후(영어 추가) 버전은 아직 macOS 빌드가 없습니다. 지금은 일본어만 있는 [v1.2.0](../../releases/tag/v1.2.0)의 `JapaneseWidget-mac-universal.zip`을 받아 아래 방법대로 설치하세요. (앱 이름도 `JapaneseWidget.app`)
 
 1. [Releases](../../releases/latest)에서 `LanguageWidget-mac-universal.zip`을 받습니다. (Apple Silicon·Intel 공용)
 2. 압축을 풀고 `LanguageWidget.app`을 **응용 프로그램** 폴더로 옮깁니다.
@@ -49,7 +49,7 @@ Windows·macOS 바탕화면에 띄워두고 히라가나·가타가나를 익히
 1. 영단어가 나오면 뜻을 한국어로 입력하고 Enter를 누릅니다.
 2. 등록한 뜻과 같으면 정답입니다. 띄어쓰기와 끝말 차이는 무시합니다. (`예약` = `예약하다`, `중요하다` = `중요한`, `(~에) 참석하다` = `참석`)
 3. 다르면 등록된 뜻이 나오고 직접 고릅니다.
-   - **맞음** (Enter): 정답으로 처리하고, 내 답을 그 단어의 뜻에 추가합니다. 다음부터는 바로 정답이 됩니다.
+   - **맞음** (Enter): 정답으로 처리합니다. 등록된 뜻은 바뀌지 않습니다.
    - **틀림** (Esc): 오답으로 처리합니다.
 4. 모르면 빈칸으로 Enter를 누르면 뜻을 보여줍니다.
 

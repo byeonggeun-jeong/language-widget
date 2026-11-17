@@ -215,9 +215,9 @@ function renderQuiz() {
   // 대기 중 모드가 바뀌었으면(카드가 사라졌으면) 다음 단어를 그리지 않는다
   const next = () => card.isConnected && renderQuiz();
 
-  function finish(correct, addMeaning) {
+  function finish(correct) {
     if (Date.now() - shownAt < 300) return; // Enter를 누르고 있어서 바로 눌리는 것 방지
-    setWords(record(words, w.word, { correct, addMeaning }));
+    setWords(record(words, w.word, { correct }));
     next();
   }
 
@@ -235,7 +235,7 @@ function renderQuiz() {
     }
     // 등록된 뜻과 다르면 정답을 보여주고, 맞는 답이었는지는 직접 판단한다
     box.replaceWith(el('div', 'mine', input ? `내 답: ${input}` : '모름'));
-    const accept = input ? () => finish(true, input) : () => finish(false);
+    const accept = () => finish(!!input);
     const reject = () => finish(false);
     if (input) {
       actions.append(button('맞음', accept, 'primary'), button('틀림', reject));

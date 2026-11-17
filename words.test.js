@@ -41,12 +41,10 @@ test('정답 판정: 띄어쓰기·끝말·괄호·물결표', () => {
   assert.ok(!isCorrect(w, '  '));
 });
 
-test('맞음 인정하면 내 답이 뜻에 추가되고, 다음부터 정답', () => {
+test('맞음으로 처리해도 뜻은 그대로, 틀린 기록만 감소', () => {
   let list = [{ word: 'reserve', meanings: ['예약하다'], miss: 2 }];
-  assert.ok(!isCorrect(list[0], '잡아두다'));
-  list = record(list, 'reserve', { correct: true, addMeaning: '잡아두다' });
-  assert.deepStrictEqual(list[0], { word: 'reserve', meanings: ['예약하다', '잡아두다'], miss: 1 });
-  assert.ok(isCorrect(list[0], '잡아두다'));
+  list = record(list, 'reserve', { correct: true });
+  assert.deepStrictEqual(list[0], { word: 'reserve', meanings: ['예약하다'], miss: 1 });
 });
 
 test('틀린 기록은 0~5 사이', () => {

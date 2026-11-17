@@ -6,7 +6,7 @@ const SIZES = {
   cycle: { width: 220, height: 260 },
   flash: { width: 220, height: 260 },
   table: { width: 420, height: 540 },
-  quiz: { width: 260, height: 260 },
+  quiz: { width: 220, height: 260 },
   manage: { width: 360, height: 520 },
 };
 
