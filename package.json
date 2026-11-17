@@ -7,8 +7,8 @@
   "scripts": {
     "start": "electron .",
     "test": "node --test",
-    "pack": "electron-packager . JapaneseWidget --platform=win32 --arch=x64 --out=dist --overwrite --asar --icon=icon.ico --ignore=\"^/icon\\.(ico|icns)$\" --ignore=\"^/mac-info\\.plist$\" --ignore=\"\\.test\\.js$\" --ignore=\"\\.lnk$\" --ignore=\"^/README\\.md$\"",
-    "pack:mac": "electron-packager . JapaneseWidget --platform=darwin --arch=universal --out=dist --overwrite --asar --icon=icon.icns --app-bundle-id=com.byeonggeun.kanawidget --extend-info=mac-info.plist --ignore=\"^/icon\\.(ico|icns)$\" --ignore=\"^/mac-info\\.plist$\" --ignore=\"\\.test\\.js$\" --ignore=\"\\.lnk$\" --ignore=\"^/README\\.md$\""
+    "pack": "electron-packager . LanguageWidget --platform=win32 --arch=x64 --out=dist --overwrite --asar --icon=icon.ico --ignore=\"^/icon\\.(ico|icns)$\" --ignore=\"^/mac-info\\.plist$\" --ignore=\"\\.test\\.js$\" --ignore=\"\\.lnk$\" --ignore=\"^/README\\.md$\"",
+    "pack:mac": "electron-packager . LanguageWidget --platform=darwin --arch=universal --out=dist --overwrite --asar --icon=icon.icns --app-bundle-id=com.byeonggeun.kanawidget --extend-info=mac-info.plist --ignore=\"^/icon\\.(ico|icns)$\" --ignore=\"^/mac-info\\.plist$\" --ignore=\"\\.test\\.js$\" --ignore=\"\\.lnk$\" --ignore=\"^/README\\.md$\""
   },
   "devDependencies": {
     "@electron/packager": "^20.3.0",

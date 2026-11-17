@@ -1,4 +1,4 @@
-# 일본어 위젯
+# 언어 위젯
 
 Windows·macOS 바탕화면에 띄워두고 히라가나·가타가나를 익히거나, 직접 등록한 영단어의 뜻을 맞히는 위젯입니다.
 
@@ -6,19 +6,21 @@ Windows·macOS 바탕화면에 띄워두고 히라가나·가타가나를 익히
 
 ### Windows
 
-1. [Releases](../../releases/latest)에서 `JapaneseWidget-win-x64.zip`을 받습니다.
+1. [Releases](../../releases/latest)에서 `LanguageWidget-win-x64.zip`을 받습니다.
 2. 원하는 곳에 압축을 풉니다.
-3. 폴더 안의 `JapaneseWidget.exe`를 실행합니다.
+3. 폴더 안의 `LanguageWidget.exe`를 실행합니다.
 
 > 서명되지 않은 프로그램이라 처음 실행할 때 "Windows의 PC 보호" 창이 뜰 수 있습니다. **추가 정보 → 실행**을 누르세요.
 
 ### macOS
 
-1. [Releases](../../releases/latest)에서 `JapaneseWidget-mac-universal.zip`을 받습니다. (Apple Silicon·Intel 공용)
-2. 압축을 풀고 `JapaneseWidget.app`을 **응용 프로그램** 폴더로 옮깁니다.
+> v1.3.0(영어 추가)은 아직 macOS 빌드가 없습니다. 지금은 일본어만 있는 [v1.2.0](../../releases/tag/v1.2.0)의 `JapaneseWidget-mac-universal.zip`을 받아 아래 방법대로 설치하세요. (앱 이름도 `JapaneseWidget.app`)
+
+1. [Releases](../../releases/latest)에서 `LanguageWidget-mac-universal.zip`을 받습니다. (Apple Silicon·Intel 공용)
+2. 압축을 풀고 `LanguageWidget.app`을 **응용 프로그램** 폴더로 옮깁니다.
 3. 처음 한 번은 앱을 **우클릭 → 열기 → 열기**로 실행합니다.
 
-> 서명되지 않은 앱이라 그냥 더블클릭하면 "확인되지 않은 개발자" 경고가 뜹니다. 위 방법으로도 안 되면 **시스템 설정 → 개인정보 보호 및 보안**에서 **그래도 열기**를 누르거나, 터미널에서 `xattr -cr /Applications/JapaneseWidget.app`을 실행하세요.
+> 서명되지 않은 앱이라 그냥 더블클릭하면 "확인되지 않은 개발자" 경고가 뜹니다. 위 방법으로도 안 되면 **시스템 설정 → 개인정보 보호 및 보안**에서 **그래도 열기**를 누르거나, 터미널에서 `xattr -cr /Applications/LanguageWidget.app`을 실행하세요.
 
 위젯은 화면 오른쪽 위에 나타나고, 작업표시줄(macOS는 Dock)에는 표시되지 않습니다. 끌 때는 **우클릭 → 종료**를 누릅니다. (macOS 트랙패드는 두 손가락 클릭)
 
