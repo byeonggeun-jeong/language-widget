@@ -1,5 +1,5 @@
 const { TABLES, makeKana, buildPool, isCorrect } = window.Kana;
-const { parseBulk, splitMeanings, upsert, isCorrect: isMeaningCorrect, pickNext, record } = window.Words;
+const { parseBulk, splitMeanings, upsert, findWord, addMeanings, isCorrect: isMeaningCorrect, buildRound, requeue, record } = window.Words;
 const app = document.getElementById('app');
 const MAX_TRIES = 3;
 
@@ -10,6 +10,7 @@ let tableTab = 'seion';
 // 영어
 let words = [];
 let current = null; // 지금 출제 중인 단어
+let queue = []; // 이번 바퀴에 남은 출제 순서 (단어 이름)
 let editing = null; // 단어 관리에서 수정 중인 단어
 let bulkOpen = false;
 
@@ -190,8 +191,21 @@ function onEnter(input, fn) {
   });
 }
 
+// 바퀴가 끝나면 새 바퀴를 만든다. 그사이 지운 단어는 건너뛴다
+function nextWord() {
+  for (;;) {
+    if (!queue.length) {
+      if (!words.length) return null;
+      queue = buildRound(words, current);
+    }
+    const w = words.find((x) => x.word === queue[0]);
+    queue = queue.slice(1);
+    if (w) return w;
+  }
+}
+
 function renderQuiz() {
-  const w = pickNext(words, current);
+  const w = nextWord();
   if (!w) return renderEmpty('등록된 단어가 없습니다.\n우클릭 → 단어 관리에서 등록하세요.');
   current = w.word;
   let locked = false;
@@ -218,6 +232,7 @@ function renderQuiz() {
   function finish(correct) {
     if (Date.now() - shownAt < 300) return; // Enter를 누르고 있어서 바로 눌리는 것 방지
     setWords(record(words, w.word, { correct }));
+    if (!correct) queue = requeue(queue, w.word);
     next();
   }
 
@@ -267,16 +282,34 @@ function renderManage() {
   meanIn.placeholder = '뜻 (여러 개는 쉼표로 구분)';
   meanIn.spellcheck = false;
   const formButtons = el('div', 'row-buttons');
-  formButtons.append(button(editing ? '수정' : '추가', save, 'primary'));
+  const saveButton = button(editing ? '수정' : '추가', save, 'primary');
+  formButtons.append(saveButton);
+  const cancel = () => {
+    editing = null;
+    renderManage();
+    app.querySelector('.form input').focus();
+  };
   if (editing) {
     const old = words.find((w) => w.word === editing);
     wordIn.value = old.word;
     meanIn.value = old.meanings.join(', ');
-    formButtons.append(button('취소', () => { editing = null; renderManage(); }));
+    formButtons.append(button('취소', cancel));
   }
   form.append(wordIn, meanIn, formButtons);
   onEnter(wordIn, () => meanIn.focus());
   onEnter(meanIn, save);
+  for (const input of [wordIn, meanIn]) {
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !e.isComposing) cancel();
+    });
+  }
+
+  // 새로 등록할 때 이미 있는 단어면 알려준다. 저장하면 기존 뜻 뒤에 덧붙인다
+  wordIn.addEventListener('input', () => {
+    const old = !editing && findWord(words, wordIn.value);
+    msg.textContent = old ? `이미 등록된 단어예요: ${old.meanings.join(', ')}\nEnter: 뜻 추가 · Esc: 취소` : '';
+    saveButton.textContent = old ? '뜻 추가' : '추가';
+  });
 
   function save() {
     const word = wordIn.value.trim().replace(/\s+/g, ' ');
@@ -286,11 +319,17 @@ function renderManage() {
       msg.textContent = '영단어와 뜻을 모두 입력하세요.';
       return;
     }
-    // 수정하면서 영단어 철자를 바꿨으면 이전 항목은 지운다
-    const base = editing && editing.toLowerCase() !== word.toLowerCase() ? words.filter((w) => w.word !== editing) : words;
-    setWords(upsert(base, { word, meanings }));
+    const merged = !editing && findWord(words, word);
+    if (editing) {
+      // 수정하면서 영단어 철자를 바꿨으면 이전 항목은 지운다
+      const base = editing.toLowerCase() !== word.toLowerCase() ? words.filter((w) => w.word !== editing) : words;
+      setWords(upsert(base, { word, meanings }));
+    } else {
+      setWords(addMeanings(words, { word, meanings }));
+    }
     editing = null;
     renderManage();
+    if (merged) app.querySelector('.msg').textContent = `${merged.word}에 뜻을 추가했어요.`;
     app.querySelector('.form input').focus();
   }
 
@@ -307,17 +346,21 @@ function renderManage() {
     bulk.append(area, button('한꺼번에 등록', () => {
       const { words: parsed, bad } = parseBulk(area.value);
       if (!parsed.length && !bad.length) return;
-      setWords(parsed.reduce(upsert, words));
+      const merged = parsed.filter((p) => findWord(words, p.word)).length;
+      setWords(parsed.reduce(addMeanings, words));
       bulkOpen = bad.length > 0;
       renderManage();
-      app.querySelector('.msg').textContent = `${parsed.length}개 등록` + (bad.length ? `, ${bad.length}줄은 형식을 알 수 없어 남겨 두었습니다.` : '');
+      app.querySelector('.msg').textContent = `${parsed.length - merged}개 등록`
+        + (merged ? `, ${merged}개는 이미 있는 단어라 뜻을 덧붙였습니다` : '')
+        + (bad.length ? `, ${bad.length}줄은 형식을 알 수 없어 남겨 두었습니다.` : '');
       if (bad.length) app.querySelector('.bulk textarea').value = bad.join('\n');
     }, 'primary'));
   }
 
-  // 목록 (최근 등록 순)
+  // 목록 (알파벳순)
   const list = el('div', 'list');
-  for (const w of [...words].reverse()) {
+  const sorted = [...words].sort((a, b) => a.word.localeCompare(b.word, 'en', { sensitivity: 'base' }));
+  for (const w of sorted) {
     const row = el('div', w.word === editing ? 'item on' : 'item');
     row.append(el('b', '', w.word), el('span', '', w.meanings.join(', ')), button('×', (e) => {
       e.stopPropagation();
@@ -365,6 +408,7 @@ function apply(next) {
   const key = (x) => JSON.stringify([x.lang, x.mode, x.enMode, x.script, x.order, x.groups]);
   if (!prev || key(prev) !== key(s)) {
     editing = null;
+    queue = []; // 단어 관리에서 바뀐 단어가 바로 반영되도록 새 바퀴로 시작
     newDeck();
     render();
   }
