@@ -235,14 +235,19 @@ function renderQuiz() {
     }
     // 등록된 뜻과 다르면 정답을 보여주고, 맞는 답이었는지는 직접 판단한다
     box.replaceWith(el('div', 'mine', input ? `내 답: ${input}` : '모름'));
+    const accept = input ? () => finish(true, input) : () => finish(false);
+    const reject = () => finish(false);
     if (input) {
-      actions.append(
-        button('맞음', () => finish(true, input), 'ok'),
-        button('틀림', () => finish(false), 'primary'),
-      );
+      actions.append(button('맞음', accept, 'primary'), button('틀림', reject));
     } else {
-      actions.append(button('다음', () => finish(false), 'primary'));
+      actions.append(button('다음', reject, 'primary'));
     }
+    // Enter = 맞음(모름이면 다음), Esc = 틀림. 누르고 있어서 반복되는 키는 무시
+    card.addEventListener('keydown', (e) => {
+      if (e.repeat || (e.key !== 'Enter' && e.key !== 'Escape')) return;
+      e.preventDefault();
+      (e.key === 'Enter' ? accept : reject)();
+    });
     shownAt = Date.now();
     actions.querySelector('.primary').focus();
   }

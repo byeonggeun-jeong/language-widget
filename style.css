@@ -110,7 +110,6 @@ button {
   border: 1px solid var(--line); background: transparent; color: var(--fg);
 }
 button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-button.ok { border-color: var(--ok); color: var(--ok); }
 button:focus-visible { outline: 2px solid var(--fg); outline-offset: 1px; }
 
 /* 단어 퀴즈 */
