@@ -30,16 +30,27 @@ const isMac = process.platform === 'darwin';
 const settingsFile = path.join(app.getPath('userData'), 'settings.json');
 const wordsFile = path.join(app.getPath('userData'), 'words.json');
 let settings;
+let words;
 let win;
+// 저장 파일을 읽지 못했으면 이번 실행에서는 저장하지 않는다. 빈 목록·기본 설정으로 기존 파일을 덮어쓰지 않도록
+let readFailed = false;
 
 // 지금 보여주는 화면 (창 크기 기준)
 const view = (s) => (s.lang === 'en' ? s.enMode : s.mode);
 
-function loadWords() {
-  try {
-    return JSON.parse(fs.readFileSync(wordsFile, 'utf8'));
-  } catch {
-    return [];
+// 로그인 직후처럼 파일을 잠깐 못 읽을 때가 있어 몇 번 다시 시도한다. 파일이 없으면(처음 실행) fallback
+async function readJson(file, fallback) {
+  for (let i = 1; ; i++) {
+    try {
+      return JSON.parse(fs.readFileSync(file, 'utf8'));
+    } catch (e) {
+      if (e.code === 'ENOENT') return fallback;
+      if (i === 5) {
+        readFailed = true;
+        return fallback;
+      }
+      await new Promise((r) => setTimeout(r, 1000));
+    }
   }
 }
 
@@ -58,16 +69,13 @@ function migrateOldData() {
   } catch {} // 예전 버전이 실행 중이라 잠겨 있으면 남겨 둔다
 }
 
-function loadSettings() {
-  try {
-    const saved = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
-    return { ...DEFAULTS, ...saved, groups: { ...DEFAULTS.groups, ...saved.groups } };
-  } catch {
-    return { ...DEFAULTS, groups: { ...DEFAULTS.groups } };
-  }
+async function loadSettings() {
+  const saved = await readJson(settingsFile, {});
+  return { ...DEFAULTS, ...saved, groups: { ...DEFAULTS.groups, ...saved.groups } };
 }
 
 function saveSettings() {
+  if (readFailed) return;
   fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2));
 }
 
@@ -220,17 +228,29 @@ function createWindow() {
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.whenReady().then(() => {
+  app.whenReady().then(async () => {
     // macOS: skipTaskbar는 Windows 전용이라 Dock 아이콘·메뉴바를 따로 숨긴다
     if (isMac) app.setActivationPolicy('accessory');
     migrateOldData();
-    settings = loadSettings();
+    settings = await loadSettings();
+    words = await readJson(wordsFile, []);
     ipcMain.handle('get-settings', () => settings);
     ipcMain.handle('get-image', readImage);
-    ipcMain.handle('get-words', loadWords);
-    ipcMain.on('save-words', (_e, words) => fs.writeFileSync(wordsFile, JSON.stringify(words, null, 2)));
+    ipcMain.handle('get-words', () => words);
+    ipcMain.on('save-words', (_e, next) => {
+      words = next;
+      if (!readFailed) fs.writeFileSync(wordsFile, JSON.stringify(words, null, 2));
+    });
     ipcMain.on('show-menu', () => buildMenu().popup({ window: win }));
     createWindow();
+    if (readFailed) {
+      dialog.showMessageBox({
+        type: 'warning',
+        title: '언어 위젯',
+        message: '저장된 단어·설정을 읽지 못했습니다.',
+        detail: '기존 파일을 지키기 위해 이번 실행에서는 아무것도 저장하지 않습니다. 우클릭 → 종료 후 위젯을 다시 실행해 주세요.',
+      });
+    }
   });
   app.on('second-instance', () => win && win.show());
   app.on('window-all-closed', () => app.quit());

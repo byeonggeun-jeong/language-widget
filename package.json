@@ -1,6 +1,6 @@
 {
   "name": "language-widget",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "private": true,
   "description": "바탕화면용 히라가나/가타가나·영단어 위젯",
   "main": "main.js",
